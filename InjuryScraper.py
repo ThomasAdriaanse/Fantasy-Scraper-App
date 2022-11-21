@@ -44,18 +44,32 @@ def getCurrentlyInjured():
         body = table.find("tbody")
 
         rows = table.find_all('tr')
-        for row in rows:
-            cols=row.find_all('td')
-            cols=[x.text.strip() for x in cols]
-            injList.append(cols)
-            #print(cols)
-    
-    cleanedList = [x for x in injList if x != []]
-    pprint(cleanedList)  
+        tempList = [0 for i in range(len(rows))]
 
+        for index, row in enumerate(rows):
+            cols=row.find_all('td')
+            nameHTML = row.find("span", {"class": "CellPlayerName--long"})
+            
+            if nameHTML != None:
+                name1 = nameHTML.find("span")
+                name = name1.find("a")
+                name = name.text.strip()
+                tempList[index] = [name]
+            else:
+                tempList[index] = [None]
+      
+            for ind, x in enumerate(cols):
+                if ind!=0:
+                    tempList[index].append(x.text.strip())
+            
+            injList.append(tempList[index])
+            
+    
+    cleanedList = [x for x in injList if x != [None]]
+    #pprint(cleanedList)
     return cleanedList
 
-getCurrentlyInjured()
+#getCurrentlyInjured()
 
 
 #table = container.find('table')

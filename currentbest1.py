@@ -19,6 +19,7 @@ import json
 import pandas as pd
 import numpy as np
 
+import InjuryScraper
 import scraper
 
 LARGE_FONT= ("Verdana", 12)
@@ -50,7 +51,7 @@ def animate(i):
     if xAxis != '' and yAxis != '':
 
         for team in scraper.league.teams:#plot all players in league
-            xar, yar, namear=scraper.getStatsTeamObj(team, 'avg', xAxis, yAxis, "name")
+            xar, yar, namear=scraper.getStatsTeamObj(team, '2023_total', 'avg', xAxis, yAxis, "name")
             a.plot(xar,yar, 'ro')
                 
 
@@ -62,7 +63,7 @@ def animate(i):
         elif playerHighlight[0]!=0:
             for team in scraper.league.teams:
                 if playerHighlight[0] == team:
-                    xar, yar, namear=scraper.getStatsTeamObj(team, 'avg', xAxis, yAxis, "name")
+                    xar, yar, namear=scraper.getStatsTeamObj(team, '2023_total', 'avg', xAxis, yAxis, "name")
                     a.plot(xar,yar, 'ro', color = "Green")
                     if showNames==True:
                         for i, txt in enumerate(namear):
@@ -304,22 +305,7 @@ class TableFrame(ttk.Frame):
         #MIN,FGM,FGA,FTM,FTA,3PM,REB,AST,STL, BLK, TO, PTS,
 
         #columns = scraper.getStatsTeamObj(team, 'avg', "name", 'PTS', 'MIN')
-        columns = scraper.getStatsTeamObj(team, 'avg', "name",'MIN','FGM','FGA','FTM','FTA','REB','AST','STL', 'BLK', 'TO', 'PTS')#missing 3pm
-        """ 
-        table.column('#0', width=0, stretch=NO)
-        table.column('Player', anchor=CENTER, width=100)
-        table.column('PTS', anchor=CENTER, width=100)
-        table.column('MIN', anchor=CENTER, width=100)
-
-        table.heading('#0', text='', anchor=CENTER)
-        table.heading('Player', text='Player', anchor=CENTER)
-        table.heading('PTS', text='PTS', anchor=CENTER)
-        table.heading('MIN', text='MIN', anchor=CENTER)
-
-        for i in range(len(team.roster)):
-            table.insert(parent='', index=i, iid=i, text='', values=(columns[0][i], columns[1][i], columns[2][i]))
-
-        """
+        columns = scraper.getStatsTeamObj(team, '2023_total', 'avg', "name",'MIN','FGM','FGA','FTM','FTA','REB','AST','STL', 'BLK', 'TO', 'PTS')#missing 3pm
         
 
         def createTable(rows1, table):
@@ -334,6 +320,7 @@ class TableFrame(ttk.Frame):
 
                 
             for inj, j in enumerate(rows1):
+                #print(rows1[:][inj])
                 table.insert(parent='', index = inj, text ='', values = (rows1[:][inj]))
          
 
@@ -349,7 +336,8 @@ class TableFrame(ttk.Frame):
         #pprint(rows)
         createTable(rows, table)
         table.pack(fill = X)
-        
+
+""" 
 class DataRow(ttk.Frame):
     def __init__(self, container):
         super().__init__(container)
@@ -360,7 +348,7 @@ class DataRow(ttk.Frame):
         #label1.grid(column=0, row=rowNum, padx=100)
         rowOutline = ImageTk.PhotoImage(Image.open(folderLocation+"tableRowImage2.png"))
         row = tk.Label(self, image =rowOutline)
-        row.pack(side = "top", fill=tk.x)
+        row.pack(side = "top", fill=tk.x) """
 
 def treeview_sort_column(tv, col, reverse):
     l = [(tv.set(k, col), k) for k in tv.get_children('')]
@@ -379,7 +367,6 @@ class InjuryPage(tk.Frame):
     def __init__(self, parent, controller):  
         tk.Frame.__init__(self, parent)
         
-        
         #Injury page to do:
         #get who is currehntly injured
         #get all past injury data
@@ -387,18 +374,85 @@ class InjuryPage(tk.Frame):
         label = tk.Label(self, text="Injury Page", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
 
+        table_frameL = InjuryTableFrame(self)
+        table_frameL.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+class InjuryTableFrame(ttk.Frame):
+    def __init__(self, container):
+        super().__init__(container)
+        
+
+        #print(team.team_id)
+        teamNameLabel = tk.Label(self, text="Injuries", font=LARGE_FONT)
+        teamNameLabel.pack(side = "top") 
+
+        table=ttk.Treeview(self)
+        table["columns"] = ("Player", "Position",'Date Updated','Injury','Injury Status', 'Points')
+
+        rows = InjuryScraper.getCurrentlyInjured()
+        for i in rows:
+            temp = scraper.GetPlayerStatsByName(i[0], "PTS")
+            if temp == None:
+                i.append(0)
+            else:
+                i.append(temp[0])
+
+        #pprint(rows)
+        """  for ind, val in enumerate(columns[0]):
+            temp = scraper.GetAllPlayerStatsByName(val)
+            columns[5][ind] = temp """
+
+        def createTable(rows1, table):
+            table.column('#0', width=0, stretch=NO)
+            table.heading('#0', text='', anchor=CENTER)
+            #print(len(table["columns"]))
+            for ind, i in enumerate(table["columns"]):
+               
+                table.column(i, anchor=CENTER, width=50, minwidth = 40)
+                table.heading(i, text=i, anchor=CENTER)
+                #print(ind)
+
+                
+            for inj, j in enumerate(rows1):
+                #print(rows1[:][inj])
+                table.insert(parent='', index = inj, text ='', values = (rows1[:][inj]))
+         
+
+        #for i in range(scraper.getMaxRosterSize()):
+            #row=DataRow(self)
+            #image1 = ImageTk.PhotoImage(Image.open(folderLocation+"tableRowImage.png"))
+            #label1 = tk.Label(self, image =image1)
+            #label1.image = image1
+            #row.pack(side = "top", padx=50)
+
+        #convert columns list to rows
+        #rows = list(zip(*columns))[::-1]
+        #pprint(rows)
+        rows = sorted(rows,key=lambda l:l[5], reverse=True)
+        createTable(rows, table)
+        table.pack(fill = BOTH)
+
+
 class MyTeamPage(tk.Frame):
 
     def __init__(self, parent, controller):  
         tk.Frame.__init__(self, parent)
+        #My Team page to Do:
+        #add projected points
+        #extra stats such as injury percentage, fantasy points, fantasy points per min, 
+        
 
         label = tk.Label(self, text="My Team", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
+
         table_frameL = TableFrame(self, scraper.league.teams[0])
-        #button_frame.grid(column=1, row=0)
         table_frameL.pack(fill=tk.BOTH, expand=True)
 
-        
+
+        table_frameR = TableFrame(self, scraper.league.teams[0])
+        table_frameR.pack(fill=tk.BOTH, expand=True)
+
+
 
 
 
