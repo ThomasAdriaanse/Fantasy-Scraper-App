@@ -33,62 +33,66 @@ for player in f_a:
     f_a_stats.append(player.stats)"""
 
 
+playerDict = {}
+
+for j in range(len(league.teams)):
+    for i in range(len(league.teams[j].roster)):
+        if '2023_total' in league.teams[j].roster[i].stats.keys():
+                if 'avg' in league.teams[j].roster[i].stats['2023_total'].keys():
+                    playerDict[league.teams[j].roster[i].name] =  league.teams[j].roster[i].stats['2023_total']['avg']
+
+
+for i in league.free_agents():
+    if '2023_total' in i.stats.keys():
+        if 'avg' in i.stats['2023_total'].keys():
+            playerDict[i.name] = i.stats['2023_total']['avg']
+    #pprint(i.stats['2023_total']['avg'])
+
+
+#print(playerDict['Cade Cunningham'])
+#pprint(playerDict)
+
+
 def getTeamRoster(teamNum):
     return league.teams[teamNum].roster
-""" 
-def get2Stats(stat1, stat2, averageOrTotal, team):#should probably change to getXStats later
 
-    stats1Vals = []
-    stats2Vals = []
-    playedRoster = []
 
-    if team == 0:# team 0 is all teams
-        for j in range(len(league.teams)):
-            for i in range(len(league.teams[team].roster)):
-                if '022022' in league.teams[team].roster[i].stats.keys():
-                    
-                    stats1Vals.append(league.teams[team].roster[i].stats['022022'][averageOrTotal][stat1])
-                    stats2Vals.append(league.teams[team].roster[i].stats['022022'][averageOrTotal][stat2])
-                    playedRoster.append(league.teams[team].roster[i].name)
-    else:
-        for i in range(len(league.teams[team].roster)):
-            if '022022' in league.teams[team].roster[i].stats.keys():
-                
-                stats1Vals.append(league.teams[team].roster[i].stats['022022'][averageOrTotal][stat1])
-                stats2Vals.append(league.teams[team].roster[i].stats['022022'][averageOrTotal][stat2])
-                playedRoster.append(league.teams[team].roster[i].name)
-      
-    return stats1Vals, stats2Vals, playedRoster
- """
-
-#pprint(league.teams[0].roster[4].stats['2022_total'])
-#pprint(league.teams[0].roster[0].name)
-def getStatsTeamObj(team, averageOrTotal, *args):#same as get2Stats but uses team obj not team number
+def getStatsTeamObj(team, year, averageOrTotal, *args):#same as get2Stats but uses team obj not team number
 
     statsLists = [[] for i in range(len(args))]
-    #print(team)
-    #print(averageOrTotal)
-    #pprint(args)
     for index, ar in enumerate(args):
-        
         for i in range(len(team.roster)):
-            if '2022_total' in team.roster[i].stats.keys():
-                if 'avg' in team.roster[i].stats['2022_total'].keys():
+            #needed so no error occurs when player has not played a game yet
+            if year in team.roster[i].stats.keys():
+                if 'avg' in team.roster[i].stats[year].keys():
                     if ar == "name":
                         statsLists[index].append(team.roster[i].name)
                     else:
-                        #print(statsLists[index].append(team.roster[i].stats['2022_total']))
-                        statsLists[index].append(team.roster[i].stats['2022_total'][averageOrTotal][ar])
-            elif '2023_total' in team.roster[i].stats.keys():
-                if 'avg' in team.roster[i].stats['2023_total'].keys():
-                    if ar == "name":
-                        statsLists[index].append(team.roster[i].name)
-                    else:
-                        statsLists[index].append(team.roster[i].stats['2023_total'][averageOrTotal][ar])
-
-    #pprint(statsLists)
+                        statsLists[index].append(team.roster[i].stats[year][averageOrTotal][ar])
+           
     return statsLists 
 
+
+def GetAllPlayerStats(player):
+    if player.name in playerDict:
+        return playerDict[player.name]
+    else:
+        return None
+
+def GetAllPlayerStatsByName(player):
+    if player in playerDict:
+        return playerDict[player]
+    else:
+        return None
+
+def GetPlayerStatsByName(player, *args):
+    tempList = []
+    if player in playerDict:
+        for i in args:
+            tempList.append(playerDict[player][i])
+        return tempList
+    else:
+        return None
 
 
 def getPlayerInfo(nameinput, xAxis, yAxis):
@@ -114,7 +118,6 @@ def getPlayerInfo(nameinput, xAxis, yAxis):
                     return playerArray
 
     print("No Player Found")
-    #playerArray = [0,0,0]
     return [0,0,0]
 
 
