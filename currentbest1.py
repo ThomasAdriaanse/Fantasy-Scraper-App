@@ -16,7 +16,7 @@ from PIL import ImageTk, Image
 
 import urllib
 import json
-
+ 
 import pandas as pd
 import numpy as np
 
@@ -44,7 +44,9 @@ folderLocation = "C:/Users/thoma/OneDrive - Queen's University/Documents/Random 
 
 scraper.createPlayerDict()
 scraper.splitByProTeam()
+scraper.addFPTS('2023_total')
 scraper.roundStats()
+
 
 ################# TO DO #################
 #fix graph
@@ -138,7 +140,7 @@ class FantasyScraperApp(tk.Tk):
         
 
         self.frames = {}
-        for F in (StartPage, GroupAnalysisPage, StatsPage, InjuryPage, MyTeamPage):
+        for F in (StartPage, GroupAnalysisPage, StatsPage, InjuryPage, MyTeamPage, MatchupPage):
             
             frame = F(container, self)
             self.frames[F] = frame
@@ -163,7 +165,7 @@ class FantasyScraperApp(tk.Tk):
         changePageMenu.add_command(label="Stats Page", command=lambda:self.show_frame(StatsPage))
         changePageMenu.add_command(label="Injury Page", command=lambda:self.show_frame(InjuryPage))
         changePageMenu.add_command(label="My Team Page", command=lambda:self.show_frame(MyTeamPage))
-
+        changePageMenu.add_command(label="Matchup Page", command=lambda:self.show_frame(MatchupPage))
 
 
         self.show_frame(StartPage)
@@ -326,7 +328,6 @@ class StatsPage(tk.Frame):
             #button_frame.grid(column=1, row=0)
             table_frameR.pack(fill=tk.BOTH, expand=True)
         
-
 class TableFrame(ttk.Frame):
     def __init__(self, container, team):
         super().__init__(container)
@@ -345,12 +346,12 @@ class TableFrame(ttk.Frame):
         table=ttk.Treeview(self)
 
         #table["columns"] = ("Player", "PTS", "MIN")
-        table["columns"] = ("Player", "MIN",'FGM','FGA','FTM','FTA','REB','AST','STL', 'BLK', 'TO', 'PTS')
+        table["columns"] = ("Player", "MIN",'FGM','FGA','FTM','FTA','REB','AST','STL', 'BLK', 'TO', 'PTS', 'FPTS')
 
         #MIN,FGM,FGA,FTM,FTA,3PM,REB,AST,STL, BLK, TO, PTS,
 
         #columns = scraper.getStatsTeamObj(team, 'avg', "name", 'PTS', 'MIN')
-        columns = scraper.getStatsTeamObj(team, '2023_total', 'avg', "name",'MIN','FGM','FGA','FTM','FTA','REB','AST','STL', 'BLK', 'TO', 'PTS')#missing 3pm
+        columns = scraper.getStatsTeamObj(team, '2023_total', 'avg', "name",'MIN','FGM','FGA','FTM','FTA','REB','AST','STL', 'BLK', 'TO', 'PTS', 'FPTS')#missing 3pm
         
 
         def createTable(rows1, table):
@@ -358,31 +359,24 @@ class TableFrame(ttk.Frame):
             table.heading('#0', text='', anchor=CENTER)
             #print(len(table["columns"]))
             for ind, i in enumerate(table["columns"]):
-               
-                table.column(i, anchor=CENTER, width=50, minwidth = 40)
-                table.heading(i, text=i, anchor=CENTER)
+                if ind == 0:
+                    table.column(i, anchor=CENTER, width=150, minwidth = 20)
+                    table.heading(i, text=i, anchor=CENTER)
+                else: 
+                    table.column(i, anchor=CENTER, width=50, minwidth = 20)
+                    table.heading(i, text=i, anchor=CENTER)
                 #print(ind)
 
                 
             for inj, j in enumerate(rows1):
                 #print(rows1[:][inj])
                 table.insert(parent='', index = inj, text ='', values = (rows1[:][inj]))
-         
-
-        #for i in range(scraper.getMaxRosterSize()):
-            #row=DataRow(self)
-            #image1 = ImageTk.PhotoImage(Image.open(folderLocation+"tableRowImage.png"))
-            #label1 = tk.Label(self, image =image1)
-            #label1.image = image1
-            #row.pack(side = "top", padx=50)
 
         #convert columns list to rows
         rows = list(zip(*columns))[::-1]
         #pprint(rows)
         createTable(rows, table)
         table.pack(fill = X) 
-
-
 
 class DataRow(ttk.Frame):
     def __init__(self, container):
@@ -453,7 +447,7 @@ class InjuryTableFrame(ttk.Frame):
             table.heading('#0', text='', anchor=CENTER)
             #print(len(table["columns"]))
             for ind, i in enumerate(table["columns"]):
-                if ind == 4:
+                if ind == 4 or ind == 0:
                     table.column(i, anchor=CENTER, width=100, minwidth = 40)
                 else:
                     table.column(i, anchor=CENTER, width=50, minwidth = 40)
@@ -501,6 +495,22 @@ class MyTeamPage(tk.Frame):
         table_frameR = TableFrame(self, scraper.league.teams[0])
         table_frameR.pack(fill=tk.BOTH, expand=True)
 
+class MatchupPage(tk.Frame):
+
+    def __init__(self, parent, controller):  
+        tk.Frame.__init__(self, parent)
+        
+        box = scraper.league.box_scores()
+
+        label = tk.Label(self, text="Week x Matchup", font=LARGE_FONT)
+        label.pack(pady=10,padx=10)
+
+        table_frameL = TableFrame(self, box[3].home_team)
+        table_frameL.pack(fill=tk.BOTH, side = tk.LEFT, expand=True)
+
+
+        table_frameR = TableFrame(self, box[3].away_team)
+        table_frameR.pack(fill=tk.BOTH, side = tk.RIGHT, expand=True)
 
 app = FantasyScraperApp()
 ani = animation.FuncAnimation(playerGraphFigure, animate, interval=300)

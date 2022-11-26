@@ -16,6 +16,9 @@ from Levenshtein import distance as lev
 from Levenshtein import *
 
 
+#print(league.scoreboard())
+
+
 playerDict = {}
 
 def createPlayerDict():
@@ -67,6 +70,15 @@ def splitByProTeam():
         else:
             proTeamDict[playerDict[i]["PTEAM"]] = [i]
 
+def addFPTS(year):
+    for team in league.teams:
+        for i in range(len(team.roster)):
+            #needed so no error occurs when player has not played a game yet
+            if year in team.roster[i].stats.keys():
+                if 'avg' in team.roster[i].stats[year].keys():
+                    pstats =  team.roster[i].stats[year]['avg']
+                    pstats.update({'FPTS': pstats['FGM']*2-pstats['FGA']+pstats['FTM']-pstats['FTA']+pstats['3PTM']+pstats['REB']+2*pstats['AST']+3*pstats['STL']+3*pstats['BLK']-2*pstats['TO']+pstats['PTS']})
+                    pstats.update({'PTEAM': team.roster[i].proTeam})
 
 #createPlayerDict()
 #splitByProTeam()
