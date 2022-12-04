@@ -19,56 +19,64 @@ from Levenshtein import *
 #print(league.scoreboard())
 
 
-playerDict = {}
 
-def createPlayerDict():
+def createPlayerDict(year):
+    #year = '2023_total'
+    playerDict = {}
     for j in range(len(league.teams)):
         for i in range(len(league.teams[j].roster)):
-            if '2023_total' in league.teams[j].roster[i].stats.keys():
-                    if 'avg' in league.teams[j].roster[i].stats['2023_total'].keys():
-                        pstats = league.teams[j].roster[i].stats['2023_total']['avg']
+            if year in league.teams[j].roster[i].stats.keys():
+                    if 'avg' in league.teams[j].roster[i].stats[year].keys():
+                        pstats = league.teams[j].roster[i].stats[year]['avg']
                         pstats.update({'FPTS': pstats['FGM']*2-pstats['FGA']+pstats['FTM']-pstats['FTA']+pstats['3PTM']+pstats['REB']+2*pstats['AST']+3*pstats['STL']+3*pstats['BLK']-2*pstats['TO']+pstats['PTS']})
                         pstats.update({"PTEAM": league.teams[j].roster[i].proTeam})
-                        playerDict[league.teams[j].roster[i].name] =  league.teams[j].roster[i].stats['2023_total']['avg']
+                        playerDict[league.teams[j].roster[i].name] =  league.teams[j].roster[i].stats[year]['avg']
 
 
     for i in league.free_agents(size = 200):
-        if '2023_total' in i.stats.keys():
-            if 'avg' in i.stats['2023_total'].keys():
-                pstats = i.stats['2023_total']['avg']
+        if year in i.stats.keys():
+            if 'avg' in i.stats[year].keys():
+                pstats = i.stats[year]['avg']
                 pstats.update({'FPTS': pstats['FGM']*2-pstats['FGA']+pstats['FTM']-pstats['FTA']+pstats['3PTM']+pstats['REB']+2*pstats['AST']+3*pstats['STL']+3*pstats['BLK']-2*pstats['TO']+pstats['PTS']})
                 pstats.update({"PTEAM": i.proTeam})
-                playerDict[i.name] = i.stats['2023_total']['avg']
+                playerDict[i.name] = i.stats[year]['avg']
 
-def roundStats():
+    return playerDict
+
+def roundStats(year):
     for j in range(len(league.teams)):
         for i in range(len(league.teams[j].roster)):
-            if '2023_total' in league.teams[j].roster[i].stats.keys():
-                    if 'avg' in league.teams[j].roster[i].stats['2023_total'].keys():
-                        pstats = league.teams[j].roster[i].stats['2023_total']['avg']
+            if year in league.teams[j].roster[i].stats.keys():
+                    if 'avg' in league.teams[j].roster[i].stats[year].keys():
+                        pstats = league.teams[j].roster[i].stats[year]['avg']
                         for i in pstats:
                             if isinstance(pstats[i], str)==False:
                                 pstats[i] = round(pstats[i], 2)
                                 #pprint(pstats[i])
     
     for i in league.free_agents():
-        if '2023_total' in i.stats.keys():
-            if 'avg' in i.stats['2023_total'].keys():
-                    pstats = i.stats['2023_total']['avg']
+        if year in i.stats.keys():
+            if 'avg' in i.stats[year].keys():
+                    pstats = i.stats[year]['avg']
                     #print(pstats)
                     for j in pstats:
                         if isinstance(pstats[j], str)==False:
                             pstats[j] = round(pstats[j], 2)
 
-proTeamDict = {}
-
-def splitByProTeam():
+def splitByProTeam(playerDict):
+    proTeamDict = {}
+    #print(playerDict["Dejounte Murray"]['FPTS'])
     for i in playerDict:
+        #print(playerDict[i]["FPTS"])
         #pprint(playerDict[i]["PTEAM"])
-        if playerDict[i]["PTEAM"] in proTeamDict:
-            proTeamDict[playerDict[i]["PTEAM"]].append(i)
-        else:
-            proTeamDict[playerDict[i]["PTEAM"]] = [i]
+        if playerDict[i]["PTEAM"] not in proTeamDict:
+            proTeamDict[playerDict[i]["PTEAM"]] = {}
+        
+        #print(i)
+        proTeamDict[playerDict[i]["PTEAM"]].update({i:playerDict[i]})
+            
+
+    return proTeamDict
 
 def addFPTS(year):
     for team in league.teams:
@@ -80,8 +88,8 @@ def addFPTS(year):
                     pstats.update({'FPTS': pstats['FGM']*2-pstats['FGA']+pstats['FTM']-pstats['FTA']+pstats['3PTM']+pstats['REB']+2*pstats['AST']+3*pstats['STL']+3*pstats['BLK']-2*pstats['TO']+pstats['PTS']})
                     pstats.update({'PTEAM': team.roster[i].proTeam})
 
-#createPlayerDict()
-#splitByProTeam()
+#dict = createPlayerDict('2023_total')
+#proTeamDict = splitByProTeam(dict)
 #pprint(proTeamDict)
 #pprint(league.free_agents(size = 200))
 #pprint(playerDict)
@@ -116,7 +124,7 @@ def getAllPlayerStatsByName(player):
     else:
         return None
 
-def getPlayerStatsByName(player, *args):
+def getPlayerStatsByName(player, playerDict, *args):
     tempList = []
     if player in playerDict:
         for i in args:

@@ -23,6 +23,7 @@ import numpy as np
 
 import InjuryScraper
 import scraper
+import advPlayerStats
 
 from tkintertable import TableCanvas, TableModel
 
@@ -43,11 +44,11 @@ xAxis = ''
 yAxis = ''
 folderLocation = "C:/Users/thoma/OneDrive - Queen's University/Documents/Random Code Folders Crap/Pythion VS Code/Fantasy Scraper Folder/"
 
-scraper.createPlayerDict()
-scraper.splitByProTeam()
+playerDict2023 = scraper.createPlayerDict('2023_total')
+proTeamDict2023 = scraper.splitByProTeam(playerDict2023)
 scraper.addFPTS('2023_total')
-scraper.roundStats()
-
+scraper.roundStats('2023_total')
+advPlayerStats.addContestedScore(playerDict2023, proTeamDict2023)
 
 ################# TO DO #################
 #fix graph
@@ -344,15 +345,15 @@ class TableFrame(tk.Frame):
         teamNameLabel = tk.Label(self, text=team.team_name, font=LARGE_FONT)
         teamNameLabel.pack(side = "top") 
 
-        table=ttk.Treeview(self)
+        table=ttk.Treeview(self, height=13, selectmode="extended")
 
         #table["columns"] = ("Player", "PTS", "MIN")
-        table["columns"] = ("Player", "MIN",'FGM','FGA','FTM','FTA','REB','AST','STL', 'BLK', 'TO', 'PTS', 'FPTS')
+        table["columns"] = ("Player", "MIN",'FGM','FGA','FTM','FTA', '3PTM', 'REB','AST','STL', 'BLK', 'TO', 'PTS', 'CONT', 'FPTS')
 
         #MIN,FGM,FGA,FTM,FTA,3PM,REB,AST,STL, BLK, TO, PTS,
 
         #columns = scraper.getStatsTeamObj(team, 'avg', "name", 'PTS', 'MIN')
-        columns = scraper.getStatsTeamObj(team, '2023_total', 'avg', "name",'MIN','FGM','FGA','FTM','FTA','REB','AST','STL', 'BLK', 'TO', 'PTS', 'FPTS')#missing 3pm
+        columns = scraper.getStatsTeamObj(team, '2023_total', 'avg', "name",'MIN','FGM','FGA','FTM','FTA', '3PTM', 'REB','AST','STL', 'BLK', 'TO', 'PTS', 'CONT', 'FPTS')#missing 3pm
         
 
         def createTable(rows1, table):
@@ -376,11 +377,11 @@ class TableFrame(tk.Frame):
         #convert columns list to rows
         rows = list(zip(*columns))[::-1]
         #pprint(rows)
-        rows = sorted(rows,key=lambda l:l[12], reverse=True)
+        rows = sorted(rows,key=lambda l:l[14], reverse=True)
 
         createTable(rows, table)
         #table.pack(fill = X) 
-        table.pack() 
+        table.pack(expand = True) 
 
 class DataRow(tk.Frame):
     def __init__(self, container):
@@ -394,7 +395,7 @@ class DataRow(tk.Frame):
         row = tk.Label(self, image =rowOutline)
         row.pack(side = "top", fill=tk.x)
 
-def treeview_sort_column(tv, col, reverse):
+""" def treeview_sort_column(tv, col, reverse):
     l = [(tv.set(k, col), k) for k in tv.get_children('')]
     l.sort(reverse=reverse)
 
@@ -404,7 +405,7 @@ def treeview_sort_column(tv, col, reverse):
 
     # reverse sort next time
     tv.heading(col, text=col, command=lambda _col=col: \
-                 treeview_sort_column(tv, _col, not reverse))
+                 treeview_sort_column(tv, _col, not reverse)) """
   
 class InjuryPage(tk.Frame):
 
@@ -431,12 +432,12 @@ class InjuryTableFrame(tk.Frame):
         teamNameLabel = tk.Label(self, text="Injuries", font=LARGE_FONT)
         teamNameLabel.pack(side = "top") 
 
-        table=ttk.Treeview(self)
+        table=ttk.Treeview(self, height=25, selectmode="extended")
         table["columns"] = ("Player", "Position",'Date Updated','Injury','Injury Status', 'Fantasy Points')
 
         rows = InjuryScraper.getCurrentlyInjured()
         for i in rows:
-            temp = scraper.getPlayerStatsByName(i[0], "FPTS")
+            temp = scraper.getPlayerStatsByName(i[0], playerDict2023, "FPTS")
             if temp == None:
                 i.append(0)
             else:
@@ -488,7 +489,6 @@ class MyTeamPage(tk.Frame):
         stats = StatsFrame(self, myTeam)
         stats.pack()
 
-
 class StatsFrame(tk.Frame):
 
     def __init__(self, parent, team):  
@@ -497,7 +497,7 @@ class StatsFrame(tk.Frame):
 
         FPTSList = []
         for i in team.roster:
-            FPTSList.append(scraper.getPlayerStatsByName(i.name, "FPTS")[0])
+            FPTSList.append(scraper.getPlayerStatsByName(i.name, playerDict2023, "FPTS")[0])
         
         top10 = heapq.nlargest(10, FPTSList)
         avgFPTS = sum(top10)/len(top10)
@@ -505,7 +505,6 @@ class StatsFrame(tk.Frame):
 
         col1 = StatColFrame(self, "Top 10 Average FPTS:", avgFPTS)
         col1.pack()
-
 
 class StatColFrame(tk.Frame):
 
@@ -518,7 +517,6 @@ class StatColFrame(tk.Frame):
         averageText2 = tk.Label(self, text=rightCol, font=LARGE_FONT)
         averageText2.pack(pady=10,padx=10, side = RIGHT)
         
-
 class MatchupPage(tk.Frame):
 
     def __init__(self, parent, controller):  
@@ -529,11 +527,11 @@ class MatchupPage(tk.Frame):
         label = tk.Label(self, text="Week x Matchup", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
 
-        table_frameL = TableFrame(self, box[3].home_team)
+        table_frameL = MyTeamPage(self, box[3].home_team)
         table_frameL.pack(fill=tk.BOTH, side = tk.LEFT, expand=True)
 
-
-        table_frameR = TableFrame(self, box[3].away_team)
+        #table frame before
+        table_frameR = MyTeamPage(self, box[3].away_team)
         table_frameR.pack(fill=tk.BOTH, side = tk.RIGHT, expand=True)
 
 app = FantasyScraperApp()
