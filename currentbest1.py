@@ -11,6 +11,7 @@ from tkinter import *
 #from ttkwidgets.autocomplete import AutocompleteEntryListbox
 from pprint import pprint
 import customtkinter
+import heapq
 
 from PIL import ImageTk, Image
 
@@ -59,7 +60,6 @@ scraper.roundStats()
     # - age of players?
 
 #########################################
-
 
 
 def animate(i):
@@ -209,7 +209,7 @@ class GroupAnalysisPage(tk.Frame):
         #button_frame.grid(column=1, row=0)
         graph_frame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
-class InputFrame(ttk.Frame):
+class InputFrame(tk.Frame):
     def __init__(self, container):
         super().__init__(container)
         # setup the grid layout manager
@@ -289,7 +289,7 @@ class InputFrame(ttk.Frame):
             global yAxis 
             yAxis = y
 
-class GraphFrame(ttk.Frame):
+class GraphFrame(tk.Frame):
     def __init__(self, container):
         super().__init__(container)
         # setup the grid layout manager
@@ -327,8 +327,8 @@ class StatsPage(tk.Frame):
             table_frameR = TableFrame(self, scraper.league.teams[i*2+1])
             #button_frame.grid(column=1, row=0)
             table_frameR.pack(fill=tk.BOTH, expand=True)
-        
-class TableFrame(ttk.Frame):
+
+class TableFrame(tk.Frame):
     def __init__(self, container, team):
         super().__init__(container)
         
@@ -338,7 +338,8 @@ class TableFrame(ttk.Frame):
 			thefont=('Arial',12),rowheight=18, rowheaderwidth=30,
 			rowselectedcolor='yellow', read_only=True)
         table.show()  """
-
+        self.configure(background='green')
+        #self.height = 20
         #print(team.team_id)
         teamNameLabel = tk.Label(self, text=team.team_name, font=LARGE_FONT)
         teamNameLabel.pack(side = "top") 
@@ -375,10 +376,13 @@ class TableFrame(ttk.Frame):
         #convert columns list to rows
         rows = list(zip(*columns))[::-1]
         #pprint(rows)
-        createTable(rows, table)
-        table.pack(fill = X) 
+        rows = sorted(rows,key=lambda l:l[12], reverse=True)
 
-class DataRow(ttk.Frame):
+        createTable(rows, table)
+        #table.pack(fill = X) 
+        table.pack() 
+
+class DataRow(tk.Frame):
     def __init__(self, container):
         super().__init__(container)
 
@@ -408,16 +412,17 @@ class InjuryPage(tk.Frame):
         tk.Frame.__init__(self, parent)
         
         #Injury page to do:
-        #get who is currehntly injured
+        #get who is currently injured
         #get all past injury data
         #calculate average length of injury basesd on: age during injury, type of injury
+
         label = tk.Label(self, text="Injury Page", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
 
         table_frameL = InjuryTableFrame(self)
         table_frameL.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-class InjuryTableFrame(ttk.Frame):
+class InjuryTableFrame(tk.Frame):
     def __init__(self, container):
         super().__init__(container)
         
@@ -437,10 +442,7 @@ class InjuryTableFrame(ttk.Frame):
             else:
                 i.append(temp[0])
 
-        #pprint(rows)
-        """  for ind, val in enumerate(columns[0]):
-            temp = scraper.getAllPlayerStatsByName(val)
-            columns[5][ind] = temp """
+
 
         def createTable(rows1, table):
             table.column('#0', width=0, stretch=NO)
@@ -461,17 +463,6 @@ class InjuryTableFrame(ttk.Frame):
                 #print(len(rows1))
                 table.insert(parent='', index = inj, text ='', values = (rows1[:][inj]))
          
-
-        #for i in range(scraper.getMaxRosterSize()):
-            #row=DataRow(self)
-            #image1 = ImageTk.PhotoImage(Image.open(folderLocation+"tableRowImage.png"))
-            #label1 = tk.Label(self, image =image1)
-            #label1.image = image1
-            #row.pack(side = "top", padx=50)
-
-        #convert columns list to rows
-        #rows = list(zip(*columns))[::-1]
-        #pprint(rows)
         rows = sorted(rows,key=lambda l:l[5], reverse=True)
         createTable(rows, table)
         table.pack(fill = BOTH)
@@ -484,16 +475,49 @@ class MyTeamPage(tk.Frame):
         #add projected points
         #extra stats such as injury percentage, fantasy points, fantasy points per min, 
         
+        myTeam = scraper.league.teams[0]
+
+        self.configure(background='blue')
 
         label = tk.Label(self, text="My Team", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
 
-        table_frameL = TableFrame(self, scraper.league.teams[0])
-        table_frameL.pack(fill=tk.BOTH, expand=True)
+        table_frame = TableFrame(self, myTeam)
+        table_frame.pack()
+
+        stats = StatsFrame(self, myTeam)
+        stats.pack()
 
 
-        table_frameR = TableFrame(self, scraper.league.teams[0])
-        table_frameR.pack(fill=tk.BOTH, expand=True)
+class StatsFrame(tk.Frame):
+
+    def __init__(self, parent, team):  
+        tk.Frame.__init__(self, parent)
+        self.configure(background='yellow')
+
+        FPTSList = []
+        for i in team.roster:
+            FPTSList.append(scraper.getPlayerStatsByName(i.name, "FPTS")[0])
+        
+        top10 = heapq.nlargest(10, FPTSList)
+        avgFPTS = sum(top10)/len(top10)
+        
+
+        col1 = StatColFrame(self, "Top 10 Average FPTS:", avgFPTS)
+        col1.pack()
+
+
+class StatColFrame(tk.Frame):
+
+    def __init__(self, parent, leftCol, rightCol):  
+        tk.Frame.__init__(self, parent)
+        self.configure(background='purple')
+
+        averageText = tk.Label(self, text=leftCol, font=LARGE_FONT)
+        averageText.pack(pady=10,padx=10, side = LEFT)
+        averageText2 = tk.Label(self, text=rightCol, font=LARGE_FONT)
+        averageText2.pack(pady=10,padx=10, side = RIGHT)
+        
 
 class MatchupPage(tk.Frame):
 
