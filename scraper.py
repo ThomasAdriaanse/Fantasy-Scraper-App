@@ -9,15 +9,15 @@ from pprint import pprint
 lLeague = League(league_id=2027816442, year=2022, espn_s2='AECOM11%2FOes1p32ZKGjC3wfVCRNWO7xugbWPEtY8A9j1MFeexoupN2g6XkJP265N5lBgdTNAGHKxPGnwbhLQtjBYMmrkt8DRt1l9j%2BDvb0O19%2FX%2BXqWAo0uE6X6wS7nH9CXu62kY9dYVTtSCeNnv797iZmXl8GjAvwspZFvU4CH2VPzGj7Uj5DbseYM2%2BOA%2FS0k2zPXNzPlVrV2PaffrFeX2m7r5he5gdROQI8nBv25OzazETyWc1PvsKjLtc0dVLxmd5FqkEALjy4%2FRWjkvCCwhEZUn%2FB0S8Cash9sAjZbJCA%3D%3D', \
                                                     swid='{956E0B11-5D52-40DC-BDC7-2165266219D9}')
 
-league = League(league_id=547530848, year=2023, espn_s2='AEAQt2d9QIN%2FNSX8LUGzWjCJjXeZGJ9dv%2B1ipZg6guQEPdYVylucTwuvCiF2Ddzl7BkAJ%2BaEe5fAn1%2Fq9dSixaaUuporz53HTgvrOZbprG9ciSF98wSKCoEUdXbfApwJPNMgcCPIB014tusrdJUPRWVozp0xHXpDCfs1LlxC1Ex65YV5fVFCNekgi%2FyVO9PnlNGbViyrSu8bXgEvncJCuSds4YRJsvni2QIACyhf%2F9i0GF6zEe%2BzEdcYMwqFLSvJG9hbyGHmYWBiV5nt2HU7fZ0SumkV%2Bf6Zp2P6227CVfG4Bg%3D%3D', \
+Cleague = League(league_id=547530848, year=2023, espn_s2='AEAQt2d9QIN%2FNSX8LUGzWjCJjXeZGJ9dv%2B1ipZg6guQEPdYVylucTwuvCiF2Ddzl7BkAJ%2BaEe5fAn1%2Fq9dSixaaUuporz53HTgvrOZbprG9ciSF98wSKCoEUdXbfApwJPNMgcCPIB014tusrdJUPRWVozp0xHXpDCfs1LlxC1Ex65YV5fVFCNekgi%2FyVO9PnlNGbViyrSu8bXgEvncJCuSds4YRJsvni2QIACyhf%2F9i0GF6zEe%2BzEdcYMwqFLSvJG9hbyGHmYWBiV5nt2HU7fZ0SumkV%2Bf6Zp2P6227CVfG4Bg%3D%3D', \
                                                     swid='{956E0B11-5D52-40DC-BDC7-2165266219D9}')
 #league = League(league_id=547530848, year=2023)
 from Levenshtein import distance as lev
 from Levenshtein import *
+league = Cleague
 
 
 #print(league.scoreboard())
-
 
 
 def createPlayerDict(year):

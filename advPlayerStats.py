@@ -39,7 +39,9 @@ def addContestedScore(playerDict2023, proTeamDict2023):
         
         proTeamDict2023[team][i].update({'CONT':contestedScore})
         #print(proTeamDict2023[team]['FPTS'], "MINUS", playerDict2023[i]['FPTS'], "EQUALS", contestedScore)
-        print(i, " " ,contestedScore)
+        #print(i, " " ,contestedScore)
 
-
-
+scraper.league = scraper.lLeague
+playerDict2023 = scraper.createPlayerDict('2022_total')
+proTeamDict2023 = scraper.splitByProTeam(playerDict2023)
+addContestedScore(playerDict2023, proTeamDict2023)
