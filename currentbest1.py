@@ -44,18 +44,28 @@ xAxis = ''
 yAxis = ''
 folderLocation = "C:/Users/thoma/OneDrive - Queen's University/Documents/Random Code Folders Crap/Pythion VS Code/Fantasy Scraper Folder/"
 
+scraper.league = scraper.lLeague
+playerDict2022 = scraper.createPlayerDict('2022_total')
+proTeamDict2022 = scraper.splitByProTeam(playerDict2022)
+scraper.addFPTS('2022_total')
+scraper.roundStats('2022_total')
+advPlayerStats.addContestedScore(playerDict2022, proTeamDict2022)
+
+scraper.league = scraper.Cleague
 playerDict2023 = scraper.createPlayerDict('2023_total')
 proTeamDict2023 = scraper.splitByProTeam(playerDict2023)
 scraper.addFPTS('2023_total')
 scraper.roundStats('2023_total')
 advPlayerStats.addContestedScore(playerDict2023, proTeamDict2023)
 
+
+
 ################# TO DO #################
 #fix graph
 #add advanced stats
 #trade analyzer
 #previous years stats
-#contested score
+#contested score (kinda DONE)
     # - FPTS of other players on team
     # - FPTS of other players on same position on team
     # - age of players?
@@ -193,6 +203,13 @@ class StartPage(tk.Frame):
                             command=quit)
         button2.pack()
 
+        # add a pop up to enter team details
+        label1 = tk.Label(self, text=("Enter League Details:"), font=LARGE_FONT)
+        label1.pack(pady=10,padx=10)
+
+        label2 = tk.Label(self, text=("Enter Team Name"), font=LARGE_FONT)
+        label2.pack(pady=10,padx=10)
+
 class GroupAnalysisPage(tk.Frame):
 
     def __init__(self, parent, controller):
@@ -227,7 +244,7 @@ class InputFrame(tk.Frame):
         # X Axis
         ttk.Label(self, text='X Axis:').grid(
             column=0, row=1, sticky=tk.W)
-        options = ['MIN','FGM','FGA','FTM','FTA','REB','AST','STL', 'BLK', 'TO', 'PTS']#3PM should be here but does not work for some reason
+        options = ['MIN','FGM','FGA','FTM','FTA', '3PTM', 'REB','AST','STL', 'BLK', 'TO', 'PTS', 'FPTS', 'CONT']
         xAxisInput = StringVar(self)
         xAxisInput.set(options[0])
         xAxisSelect = OptionMenu(self, xAxisInput, *options)
@@ -333,7 +350,7 @@ class TableFrame(tk.Frame):
     def __init__(self, container, team):
         super().__init__(container)
         
-
+        master = self
         """ table = TableCanvas(self, 
 			cellwidth=60, cellbackgr='#e3f698',
 			thefont=('Arial',12),rowheight=18, rowheaderwidth=30,
@@ -345,15 +362,15 @@ class TableFrame(tk.Frame):
         teamNameLabel = tk.Label(self, text=team.team_name, font=LARGE_FONT)
         teamNameLabel.pack(side = "top") 
 
-        table=ttk.Treeview(self, height=13, selectmode="extended")
+        self.table=ttk.Treeview(self, height=13, selectmode="extended")
 
         #table["columns"] = ("Player", "PTS", "MIN")
-        table["columns"] = ("Player", "MIN",'FGM','FGA','FTM','FTA', '3PTM', 'REB','AST','STL', 'BLK', 'TO', 'PTS', 'CONT', 'FPTS')
+        self.table["columns"] = ("Player", "MIN",'FGM','FGA','FTM','FTA', '3PTM', 'REB','AST','STL', 'BLK', 'TO', 'PTS',  'FPTS')
 
         #MIN,FGM,FGA,FTM,FTA,3PM,REB,AST,STL, BLK, TO, PTS,
 
         #columns = scraper.getStatsTeamObj(team, 'avg', "name", 'PTS', 'MIN')
-        columns = scraper.getStatsTeamObj(team, '2023_total', 'avg', "name",'MIN','FGM','FGA','FTM','FTA', '3PTM', 'REB','AST','STL', 'BLK', 'TO', 'PTS', 'CONT', 'FPTS')#missing 3pm
+        columns = scraper.getStatsTeamObj(team, '2023_total', 'avg', "name",'MIN','FGM','FGA','FTM','FTA', '3PTM', 'REB','AST','STL', 'BLK', 'TO', 'PTS',  'FPTS')#missing 3pm
         
 
         def createTable(rows1, table):
@@ -362,10 +379,10 @@ class TableFrame(tk.Frame):
             #print(len(table["columns"]))
             for ind, i in enumerate(table["columns"]):
                 if ind == 0:
-                    table.column(i, anchor=CENTER, width=150, minwidth = 20)
+                    table.column(i, anchor=CENTER, width=130, minwidth = 50)
                     table.heading(i, text=i, anchor=CENTER)
                 else: 
-                    table.column(i, anchor=CENTER, width=50, minwidth = 20)
+                    table.column(i, anchor=CENTER, width=55, minwidth = 35)
                     table.heading(i, text=i, anchor=CENTER)
                 #print(ind)
 
@@ -377,11 +394,19 @@ class TableFrame(tk.Frame):
         #convert columns list to rows
         rows = list(zip(*columns))[::-1]
         #pprint(rows)
-        rows = sorted(rows,key=lambda l:l[14], reverse=True)
+        rows = sorted(rows,key=lambda l:l[13], reverse=True)
 
-        createTable(rows, table)
+        createTable(rows, self.table)
         #table.pack(fill = X) 
-        table.pack(expand = True) 
+        self.table.pack(expand = True) 
+        self.table.bind("<Double-1>", self.OnDoubleClick)
+
+    def OnDoubleClick(self, event):
+        item = self.table.selection()[0]
+        print("you clicked on", self.table.item(item,"values")[0])
+    
+    
+        
 
 class DataRow(tk.Frame):
     def __init__(self, container):
