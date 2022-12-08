@@ -69,6 +69,8 @@ advPlayerStats.addContestedScore(playerDict2023, proTeamDict2023)
     # - FPTS of other players on team
     # - FPTS of other players on same position on team
     # - age of players?
+#player pictures behind team stats
+#player stats window
 
 #########################################
 
@@ -316,40 +318,79 @@ class GraphFrame(tk.Frame):
         canvas.draw()
         canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
+class ScrollableFrame(tk.Frame):
+    def __init__(self, container, *args, **kwargs):
+        super().__init__(container, *args, **kwargs)
+        canvas = tk.Canvas(self)
+        scrollbar = ttk.Scrollbar(self, orient="vertical", command=canvas.yview)
+        self.scrollable_frame = ttk.Frame(canvas)
+
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(
+                scrollregion=canvas.bbox("all")
+            )
+        )
+
+        canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
 class StatsPage(tk.Frame):
 
     def __init__(self, parent, controller):  
         tk.Frame.__init__(self, parent)
-
         
-        
+        #code for scroll:-----------------------
+        canvas = tk.Canvas(self)
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)#
 
-        label = tk.Label(self, text="Stats Page", font=LARGE_FONT)
-        label.pack(pady=10,padx=10)
+        # Create a scrollbar and attach it to the frame
+        scrollbar = tk.Scrollbar(self, orient=tk.VERTICAL, command=canvas.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-        text1 = Text(width=25)
-        text1.pack()
-        scrollbar = tk.Scrollbar(self)
-        scrollbar.pack(side = RIGHT, fill = Y)
-        scrollbar.configure(command = text1.yview)
-        #scrollbar.bind('<configure>', lambda e: scrollbar.configure(scrollregion = scrollbar.bbox('all')))
+        # Attach the scrollbar to the canvas
+        canvas.configure(yscrollcommand=scrollbar.set)
 
+        # Create a frame to hold the scrollable content
+        scrollable_frame = tk.Frame(canvas)
 
+        # Bind the scrollable frame to the scrollbar
+        canvas.create_window((0, 0), window=scrollable_frame, anchor=tk.NW)
+
+        # Set the size of the scrollable region
+        scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+        #---------------------------------
 
         for i in range(6):
+            col = StatPageColFrame(scrollable_frame, scraper.league.teams[i*2], scraper.league.teams[i*2+1])
+            col.pack()
+    
+class StatPageColFrame(tk.Frame):
+    def __init__(self, parent, team1, team2):  
+        tk.Frame.__init__(self, parent)
+        self.configure(background='yellow')
 
-            table_frameL = TableFrame(self, scraper.league.teams[i*2])
-            #button_frame.grid(column=1, row=0)
-            table_frameL.pack(fill=tk.BOTH, expand=True)
+        #table_frameL = TableFrame(self, scraper.league.teams[i*2])
+        table_frameL = MyTeamPage(self, team1)
+        #button_frame.grid(column=1, row=0)
+        table_frameL.pack(side = LEFT)
 
-            table_frameR = TableFrame(self, scraper.league.teams[i*2+1])
-            #button_frame.grid(column=1, row=0)
-            table_frameR.pack(fill=tk.BOTH, expand=True)
+        #table_frameR = TableFrame(self, scraper.league.teams[i*2+1])
+        table_frameR = MyTeamPage(self, team2)
+        #button_frame.grid(column=1, row=0)
+        table_frameR.pack(side = RIGHT)
 
 class TableFrame(tk.Frame):
     def __init__(self, container, team):
         super().__init__(container)
-        
+
+        #print(team)
+        if team not in scraper.league.teams:
+            team = scraper.league.teams[0]
         master = self
         """ table = TableCanvas(self, 
 			cellwidth=60, cellbackgr='#e3f698',
@@ -404,33 +445,6 @@ class TableFrame(tk.Frame):
     def OnDoubleClick(self, event):
         item = self.table.selection()[0]
         print("you clicked on", self.table.item(item,"values")[0])
-    
-    
-        
-
-class DataRow(tk.Frame):
-    def __init__(self, container):
-        super().__init__(container)
-
-       
-        #row.image = rowOutline
-        #label1.image = rowOutline
-        #label1.grid(column=0, row=rowNum, padx=100)
-        rowOutline = ImageTk.PhotoImage(Image.open(folderLocation+"tableRowImage2.png"))
-        row = tk.Label(self, image =rowOutline)
-        row.pack(side = "top", fill=tk.x)
-
-""" def treeview_sort_column(tv, col, reverse):
-    l = [(tv.set(k, col), k) for k in tv.get_children('')]
-    l.sort(reverse=reverse)
-
-    # rearrange items in sorted positions
-    for index, (val, k) in enumerate(l):
-        tv.move(k, '', index)
-
-    # reverse sort next time
-    tv.heading(col, text=col, command=lambda _col=col: \
-                 treeview_sort_column(tv, _col, not reverse)) """
   
 class InjuryPage(tk.Frame):
 
@@ -495,14 +509,15 @@ class InjuryTableFrame(tk.Frame):
 
 class MyTeamPage(tk.Frame):
 
-    def __init__(self, parent, controller):  
+    def __init__(self, parent, myTeam):  
         tk.Frame.__init__(self, parent)
         #My Team page to Do:
         #add projected points
         #extra stats such as injury percentage, fantasy points, fantasy points per min, 
-        
-        myTeam = scraper.league.teams[0]
-
+        #myTeam = team
+        if myTeam == None:
+            myTeam = scraper.league.teams[0]
+        #print(myTeam)
         self.configure(background='blue')
 
         label = tk.Label(self, text="My Team", font=LARGE_FONT)
@@ -521,13 +536,18 @@ class StatsFrame(tk.Frame):
         self.configure(background='yellow')
 
         FPTSList = []
+        #print(team)
+        if team not in scraper.league.teams:
+            team = scraper.league.teams[0]
+
         for i in team.roster:
-            FPTSList.append(scraper.getPlayerStatsByName(i.name, playerDict2023, "FPTS")[0])
+            temp = scraper.getPlayerStatsByName(i.name, playerDict2023, "FPTS")
+            if temp != None:
+                FPTSList.append(temp[0])
         
         top10 = heapq.nlargest(10, FPTSList)
         avgFPTS = sum(top10)/len(top10)
         
-
         col1 = StatColFrame(self, "Top 10 Average FPTS:", avgFPTS)
         col1.pack()
 
