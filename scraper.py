@@ -112,13 +112,13 @@ def getStatsTeamObj(team, year, averageOrTotal, *args):#same as get2Stats but us
            
     return statsLists 
 
-def getAllPlayerStats(player):
+def getAllPlayerStats(player, playerDict):
     if player.name in playerDict:
         return playerDict[player.name]
     else:
         return None
 
-def getAllPlayerStatsByName(player):
+def getAllPlayerStatsByName(player, playerDict):
     if player in playerDict:
         return playerDict[player]
     else:

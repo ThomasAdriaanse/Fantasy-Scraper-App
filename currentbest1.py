@@ -318,27 +318,6 @@ class GraphFrame(tk.Frame):
         canvas.draw()
         canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
-class ScrollableFrame(tk.Frame):
-    def __init__(self, container, *args, **kwargs):
-        super().__init__(container, *args, **kwargs)
-        canvas = tk.Canvas(self)
-        scrollbar = ttk.Scrollbar(self, orient="vertical", command=canvas.yview)
-        self.scrollable_frame = ttk.Frame(canvas)
-
-        self.scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(
-                scrollregion=canvas.bbox("all")
-            )
-        )
-
-        canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
-
-        canvas.configure(yscrollcommand=scrollbar.set)
-
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
-
 class StatsPage(tk.Frame):
 
     def __init__(self, parent, controller):  
@@ -363,6 +342,8 @@ class StatsPage(tk.Frame):
 
         # Set the size of the scrollable region
         scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+
+        canvas.bind_all("<MouseWheel>", lambda event: canvas.yview_scroll(-1*(event.delta//120), "units"))
         #---------------------------------
 
         for i in range(6):
@@ -391,7 +372,7 @@ class TableFrame(tk.Frame):
         #print(team)
         if team not in scraper.league.teams:
             team = scraper.league.teams[0]
-        master = self
+        #master = self
         """ table = TableCanvas(self, 
 			cellwidth=60, cellbackgr='#e3f698',
 			thefont=('Arial',12),rowheight=18, rowheaderwidth=30,
@@ -444,8 +425,61 @@ class TableFrame(tk.Frame):
 
     def OnDoubleClick(self, event):
         item = self.table.selection()[0]
-        print("you clicked on", self.table.item(item,"values")[0])
-  
+        playerName = self.table.item(item,"values")[0]
+        print("you clicked on", playerName)
+        
+        new_window = tk.Toplevel(self, width=1600, height=1600)
+        new_window.resizable(False, False)
+        PlayerPage(new_window, playerName).pack()
+
+class PlayerPage(tk.Frame):
+    def __init__(self, parent, playerName):  
+        tk.Frame.__init__(self, parent)
+        
+        #code for scroll:-----------------------
+        canvas = tk.Canvas(self)
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)#
+
+        # Create a scrollbar and attach it to the frame
+        scrollbar = tk.Scrollbar(self, orient=tk.VERTICAL, command=canvas.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # Attach the scrollbar to the canvas
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        # Create a frame to hold the scrollable content
+        scrollable_frame = tk.Frame(canvas)
+
+        # Bind the scrollable frame to the scrollbar
+        canvas.create_window((0, 0), window=scrollable_frame, anchor=tk.NW)
+
+        # Set the size of the scrollable region
+        scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+
+        canvas.bind_all("<MouseWheel>", lambda event: canvas.yview_scroll(-1*(event.delta//120), "units"))
+        
+        #---------------------------------
+
+        label = tk.Label(scrollable_frame, text=playerName, font=LARGE_FONT)
+        label.pack(pady=10,padx=10)
+
+        playerStats = scraper.getAllPlayerStatsByName(playerName, playerDict2023)
+        pprint(playerStats)
+        for k, v in playerStats.items():
+            if k.isnumeric() == False:
+                tempLabel = PlayerPageStatRowFrame(scrollable_frame, k, v)
+                tempLabel.pack(pady=10,padx=10)
+
+class PlayerPageStatRowFrame(tk.Frame):
+
+    def __init__(self, parent, leftCol, rightCol):  
+        tk.Frame.__init__(self, parent)
+        self.configure(background='purple')
+        averageText = tk.Label(self, text=leftCol + ": ", font=LARGE_FONT)
+        averageText.pack(side = LEFT)
+        averageText2 = tk.Label(self, text=rightCol, font=LARGE_FONT)
+        averageText2.pack(side = RIGHT)
+
 class InjuryPage(tk.Frame):
 
     def __init__(self, parent, controller):  
