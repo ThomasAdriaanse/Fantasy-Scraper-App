@@ -6,7 +6,7 @@ import matplotlib.animation as animation
 from matplotlib import style
 import matplotlib.pyplot as plt
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, PhotoImage
 from tkinter import *
 #from ttkwidgets.autocomplete import AutocompleteEntryListbox
 from pprint import pprint
@@ -456,7 +456,7 @@ class PlayerPage(tk.Frame):
         # Set the size of the scrollable region
         scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
 
-        canvas.bind_all("<MouseWheel>", lambda event: canvas.yview_scroll(-1*(event.delta//120), "units"))
+        #canvas.bind_all("<MouseWheel>", lambda event: canvas.yview_scroll(-1*(event.delta//120), "units"))
         
         #---------------------------------
 
