@@ -195,7 +195,8 @@ class StartPage(tk.Frame):
         tk.Frame.__init__(self,parent)
         label = tk.Label(self, text=("""Enter app?"""), font=LARGE_FONT)
         label.pack(pady=10,padx=10)
-        
+        self.configure(background='green')
+
         #self.configure(background='green')
         button1 = ttk.Button(self, text="Agree",
                             command=lambda: controller.show_frame(GroupAnalysisPage))
@@ -435,7 +436,8 @@ class TableFrame(tk.Frame):
 class PlayerPage(tk.Frame):
     def __init__(self, parent, playerName):  
         tk.Frame.__init__(self, parent)
-        
+        self.configure(background='green')
+
         #code for scroll:-----------------------
         canvas = tk.Canvas(self)
         canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)#
@@ -469,6 +471,24 @@ class PlayerPage(tk.Frame):
             if k.isnumeric() == False:
                 tempLabel = PlayerPageStatRowFrame(scrollable_frame, k, v)
                 tempLabel.pack(pady=10,padx=10)
+
+      
+     
+        #get file path
+        imageName = "C:/Users/thoma/OneDrive - Queen's University/Documents/Random Code Folders Crap/Pythion VS Code/Fantasy Scraper Folder/playerImages/"
+        imageName += playerName
+        imageName += ' Headshot.png'
+
+        #open image
+        image = Image.open(imageName)
+        #convert to correct type to support transparency
+        image = image.convert("RGBA")
+        image.mode = "RGBA"
+        #create photoimage object
+        photoImage = ImageTk.PhotoImage(image)
+        panel = Label(self, image=photoImage)
+        panel.photo = photoImage
+        panel.pack()
 
 class PlayerPageStatRowFrame(tk.Frame):
 
