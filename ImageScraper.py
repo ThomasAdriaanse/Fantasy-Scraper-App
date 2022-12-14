@@ -5,34 +5,26 @@ from pprint import pprint
 import requests
 import os
 from os.path  import basename
-import urllib.request
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+import time
+
+#webscrape player headshot images from nba website
 
 s = HTMLSession()
-
-
 
 def getData(url):
     r = s.get(url)
     soup = BeautifulSoup(r.text, 'html.parser') 
     return soup
 
-""" 
-def getNextPage(soup):
-    
-    if not soup.find('a', string='Next')['href']:
-        url = 'https://www.prosportstransactions.com/basketball'
-        return url
-    else:
-        return soup.find('a', string='Next')['href'] """
-
-url = 'https://www.nba.com/players'
 
 
+def getImages(html):
+    directory = "C:/Users/thoma/OneDrive - Queen's University/Documents/Random Code Folders Crap/Pythion VS Code/Fantasy Scraper Folder/playerImages"
 
-def getCurrentlyInjured():
-
-    injList = []
-    HTMLPage = getData(url)
+    HTMLPage = BeautifulSoup(html, 'html.parser') 
     container = HTMLPage.find("div", {"id": "__next"})
     content = container.find("div", {"class": "Layout_base__6IeUC Layout_withSubNav__ByKRF Layout_justNav__2H4H0"})
     main = content.find("div", {"class": "Layout_mainContent__jXliI"})
@@ -47,34 +39,46 @@ def getCurrentlyInjured():
     parse9 = parse8.find("div")
     parse10 = parse9.find("table", {"class": "players-list"})
     parse11 = parse10.find("tbody")
-    parse12 = parse11.find("tr")
-    parse13 = parse12.find("td", {"class": "primary text RosterRow_primaryCol__1lto4"})
-    parse14 = parse13.find("a", {"class": "Anchor_anchor__cSc3P RosterRow_playerLink__qw1vG"})
-    parse15 = parse14.find("div", {"class": "RosterRow_playerHeadshot__tvZOn"})
-    parse16 = parse15.find("img")
-    link = parse16["src"]
-    imgname = parse16["alt"]+".png"
+    parse12 = parse11.find_all("tr")
+    for i in parse12:
+        parse13 = i.find("td", {"class": "primary text RosterRow_primaryCol__1lto4"})
+        parse14 = parse13.find("a", {"class": "Anchor_anchor__cSc3P RosterRow_playerLink__qw1vG"})
+        parse15 = parse14.find("div", {"class": "RosterRow_playerHeadshot__tvZOn"})
+        parse16 = parse15.find("img")
+        link = parse16["src"]
+        imgname = parse16["alt"]+".png"
 
-    imgContent = requests.get(link).content
-    # Set the directory path
-    directory = "C:/Users/thoma/OneDrive - Queen's University/Documents/Random Code Folders Crap/Pythion VS Code/Fantasy Scraper Folder/playerImages"
+        imgContent = requests.get(link).content
+        # Set the directory path
 
-    # Create the directory if it doesn't exist
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+        # Create the directory if it doesn't exist
+        if not os.path.exists(directory):
+            os.makedirs(directory)
 
-    # Save the image to a file in the directory
-    with open(os.path.join(directory, imgname), "wb") as f:
-        f.write(imgContent)
+        # Save the image to a file in the directory
+        with open(os.path.join(directory, imgname), "wb") as f:
+            f.write(imgContent)
 
-    #if "http" in link:
-    #    with open(imgname, "wb") as f:
-    #        f.write(requests.get(link).content)
+        print(imgname)
 
-    #directory = "C:/Users/thoma/OneDrive - Queen's University/Documents/Random Code Folders Crap/Pythion VS Code/Fantasy Scraper Folder/playerImages"
-
-
-    #C:\Users\thoma\OneDrive - Queen's University\Documents\Random Code Folders Crap\Pythion VS Code\Fantasy Scraper Folder\playerImages
     return link
 
-pprint(getCurrentlyInjured())
+
+url = 'https://www.nba.com/players'
+PATH = "C:/Users/thoma/OneDrive - Queen's University/Documents/Random Code Folders Crap/Pythion VS Code/Fantasy Scraper Folder/chromedriver_win32/chromedriver.exe"
+
+# Start the web driver
+driver = webdriver.Chrome(executable_path=PATH)
+directory = "C:/Users/thoma/OneDrive - Queen's University/Documents/Random Code Folders Crap/Pythion VS Code/Fantasy Scraper Folder/playerImages"
+
+# Open the website
+driver.get(url)
+
+img_element = []
+for page in range(11):
+    time.sleep(2)
+    html = driver.page_source
+    getImages(html)
+    next_button = driver.find_elements(By.CLASS_NAME, "Pagination_button__sqGoH")
+    next_button[1].click()
+
