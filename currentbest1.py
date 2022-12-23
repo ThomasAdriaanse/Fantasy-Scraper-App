@@ -65,12 +65,13 @@ advPlayerStats.addContestedScore(playerDict2023, proTeamDict2023)
 #add advanced stats
 #trade analyzer
 #previous years stats
-#contested score (kinda DONE)
+#contested score (kinda DONE) b 
     # - FPTS of other players on team
     # - FPTS of other players on same position on team
     # - age of players?
 #player pictures behind team stats
 #player stats window
+#nba team pages
 
 #########################################
 
@@ -230,7 +231,7 @@ class GroupAnalysisPage(tk.Frame):
         #button_frame.grid(column=1, row=0)
         graph_frame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
-class InputFrame(tk.Frame):
+class InputFrame(tk.Frame): 
     def __init__(self, container):
         super().__init__(container)
         # setup the grid layout manager

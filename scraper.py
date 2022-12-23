@@ -30,7 +30,9 @@ def createPlayerDict(year):
                         pstats = league.teams[j].roster[i].stats[year]['avg']
                         pstats.update({'FPTS': pstats['FGM']*2-pstats['FGA']+pstats['FTM']-pstats['FTA']+pstats['3PTM']+pstats['REB']+2*pstats['AST']+3*pstats['STL']+3*pstats['BLK']-2*pstats['TO']+pstats['PTS']})
                         pstats.update({"PTEAM": league.teams[j].roster[i].proTeam})
-                        playerDict[league.teams[j].roster[i].name] =  league.teams[j].roster[i].stats[year]['avg']
+                        pstats.update({"FTEAM": league.teams[j]})
+                        #playerDict[league.teams[j].roster[i].name] =  league.teams[j].roster[i].stats[year]['avg']
+                        playerDict[league.teams[j].roster[i].name] = pstats
 
 
     for i in league.free_agents(size = 200):
@@ -39,7 +41,8 @@ def createPlayerDict(year):
                 pstats = i.stats[year]['avg']
                 pstats.update({'FPTS': pstats['FGM']*2-pstats['FGA']+pstats['FTM']-pstats['FTA']+pstats['3PTM']+pstats['REB']+2*pstats['AST']+3*pstats['STL']+3*pstats['BLK']-2*pstats['TO']+pstats['PTS']})
                 pstats.update({"PTEAM": i.proTeam})
-                playerDict[i.name] = i.stats[year]['avg']
+                #playerDict[i.name] = i.stats[year]['avg']
+                playerDict[i.name] = pstats
 
     return playerDict
 
@@ -88,7 +91,7 @@ def addFPTS(year):
                     pstats.update({'FPTS': pstats['FGM']*2-pstats['FGA']+pstats['FTM']-pstats['FTA']+pstats['3PTM']+pstats['REB']+2*pstats['AST']+3*pstats['STL']+3*pstats['BLK']-2*pstats['TO']+pstats['PTS']})
                     pstats.update({'PTEAM': team.roster[i].proTeam})
 
-#dict = createPlayerDict('2023_total')
+dict = createPlayerDict('2023_total')
 #proTeamDict = splitByProTeam(dict)
 #pprint(proTeamDict)
 #pprint(league.free_agents(size = 200))
@@ -173,3 +176,39 @@ def getMaxRosterSize():
 
     return maxSize;
 
+
+def getAvgStats(playerDict):
+    avgStatsDict = {}
+    avgStatsDict.update({'FPTS':0, 'FGM':0, 'FGA':0, 'FTM':0, 'FTA':0, '3PTM':0, 'REB':0, 'AST':0, 'STL':0, 'BLK':0, 'TO':0, 'PTS':0})
+    statsNeeded = {'FPTS', 'FGM', 'FGA', 'FTM', 'FTA', '3PTM', 'REB', 'AST', 'STL', 'BLK', 'TO', 'PTS'}
+    #avg stats overall:
+    #try:
+    for ind, val in enumerate(playerDict):
+        if 'FTEAM' in playerDict[val].keys():
+            pprint(playerDict[val])
+            for j in statsNeeded:
+                avgStatsDict[j]+= int(playerDict[val][j])
+
+    for j in statsNeeded:
+        avgStatsDict[j]/= len(playerDict)
+    return avgStatsDict
+
+"""     #avg stats for rostered players
+    except Exception as e:
+        for k in playerDict:
+            print(k.roster)
+            for ind, val in enumerate(k.roster):
+                for j in statsNeeded:
+                    avgStatsDict[j]+= int(k[val][j])
+        
+                for j in statsNeeded:
+                    avgStatsDict[j]/= len(k)
+                return avgStatsDict
+        
+ """
+
+
+#pprint(league.teams)
+
+
+pprint(getAvgStats(dict))
