@@ -53,7 +53,11 @@ def roundStats(year):
                     if 'avg' in league.teams[j].roster[i].stats[year].keys():
                         pstats = league.teams[j].roster[i].stats[year]['avg']
                         for i in pstats:
-                            if isinstance(pstats[i], str)==False:
+                            if isinstance(pstats[i], float)==True:
+                                #print("Pstats")
+                                #pprint(pstats[i])
+                                #pprint(pstats)
+
                                 pstats[i] = round(pstats[i], 2)
                                 #pprint(pstats[i])
     
@@ -91,7 +95,7 @@ def addFPTS(year):
                     pstats.update({'FPTS': pstats['FGM']*2-pstats['FGA']+pstats['FTM']-pstats['FTA']+pstats['3PTM']+pstats['REB']+2*pstats['AST']+3*pstats['STL']+3*pstats['BLK']-2*pstats['TO']+pstats['PTS']})
                     pstats.update({'PTEAM': team.roster[i].proTeam})
 
-dict = createPlayerDict('2023_total')
+#dict = createPlayerDict('2023_total')
 #proTeamDict = splitByProTeam(dict)
 #pprint(proTeamDict)
 #pprint(league.free_agents(size = 200))
@@ -211,4 +215,4 @@ def getAvgStats(playerDict):
 #pprint(league.teams)
 
 
-pprint(getAvgStats(dict))
+#pprint(getAvgStats(dict))
