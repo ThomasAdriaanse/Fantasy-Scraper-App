@@ -1,8 +1,8 @@
-#FantasyScraper
+# FantasyScraper
 
 FantasyScraper is a Python application that provides fantasy sports players with statistics and data for their league. This version of the program includes additional functionalities to help you manage and analyze your team better.
 
-The application uses the espn-api to scrape espn fantasy basketball league data, so it is personalised to your league
+The application uses the espn-api (https://github.com/cwendt94/espn-api) to scrape espn fantasy basketball league data, so it is personalised to your league.
 
 The application uses a Tkinter-based interface. The current pages are as follows:
 
